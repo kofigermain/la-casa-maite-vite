@@ -1,4 +1,4 @@
 {
   "buildCommand": "unzip -o la-casa-maite-vite.zip && cd la-casa-maite-vite && npm install --legacy-peer-deps",
-  "outputDirectory": "la-casa-maite-vite/dist"
+  "outputDirectory": "la-casa-maite-vite"
 }
