@@ -4,10 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>La Casa Maite — Aparthotel in Accra, Ghana</title>
-  <!-- Tailwind CSS via CDN -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Lucide icons -->
-  <script defer src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
   </style>
@@ -42,7 +40,6 @@
   <!-- Hero section -->
   <section class="relative overflow-hidden">
     <div class="absolute inset-0">
-      <!-- Hero background image -->
       <img src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=2000&auto=format&fit=crop" alt="Bojo Beach area" class="h-full w-full object-cover" />
       <div class="absolute inset-0 bg-black/40"></div>
     </div>
@@ -154,7 +151,6 @@
         <p class="text-gray-600 mt-2 max-w-2xl">Hotel‑style service meets apartment comfort.</p>
       </div>
       <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <!-- Amenity cards -->
         <div class="rounded-2xl bg-white p-5 flex items-center gap-3 shadow-sm">
           <i data-lucide="wifi" class="w-6 h-6 text-gray-700"></i>
           <span class="text-sm font-medium">Fast Wi‑Fi</span>
@@ -219,7 +215,6 @@
         <p class="text-gray-600 mt-2 max-w-2xl">A snapshot of life at La Casa Maite and the Bojo Beach surroundings.</p>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <!-- eight images with fallback -->
         <div class="aspect-w-4 aspect-h-3 overflow-hidden rounded-2xl relative">
           <img src="https://images.unsplash.com/photo-1540569014015-19a7be504e3a?q=80&w=1200&auto=format&fit=crop" alt="Gallery 1" class="w-full h-full object-cover hover:scale-105 transition-transform" />
         </div>
@@ -252,12 +247,11 @@
   <section id="book" class="mx-auto max-w-7xl px-4 py-16">
     <div class="mb-8">
       <h2 class="text-3xl md:text-4xl font-semibold tracking-tight">Check availability</h2>
-      <p class="text-gray-600 mt-2 max-w-2xl">Tell us your dates and we’ll confirm the best rate.</p>
+      <p class="text-gray-600 mt-2 max-w-2xl">Tell us your dates and we'll confirm the best rate.</p>
     </div>
     <div class="rounded-2xl bg-white shadow-lg overflow-hidden">
       <div class="grid md:grid-cols-2 gap-6 p-6">
-        <!-- Form fields -->
-        <form id="booking-form" class="space-y-4">
+        <div id="booking-form" class="space-y-4">
           <div class="grid sm:grid-cols-2 gap-3">
             <div>
               <label class="text-sm text-gray-500">Check‑in</label>
@@ -295,12 +289,8 @@
           <div id="card-element" class="border rounded-md p-3 mb-3 hidden"></div>
           <p id="payment-copy" class="text-xs text-gray-500 mb-2"></p>
           <div id="card-errors" class="text-red-600 text-sm mb-2 hidden"></div>
-          <div id="card-element" class="border rounded-md p-3 mb-3"></div>
-          <p id="payment-copy" class="text-xs text-gray-500 mb-2"></p>
-          <div id="card-errors" class="text-red-600 text-sm mb-2"></div>
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-semibold">Book Now</button>
-        </form>
-        <!-- Image and CTA buttons -->
+          <button type="button" id="submit-booking" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-semibold">Book Now</button>
+        </div>
         <div class="space-y-4">
           <div class="rounded-2xl overflow-hidden h-64 md:h-[280px] bg-gray-100">
             <img src="https://images.unsplash.com/photo-1501117716987-c8e2a9ce87f0?q=80&w=1600&auto=format&fit=crop" alt="La Casa Maite exterior" class="h-full w-full object-cover" />
@@ -324,7 +314,7 @@
     <div class="mx-auto max-w-7xl px-4 py-16 grid md:grid-cols-3 gap-8">
       <div>
         <h3 class="text-2xl font-semibold tracking-tight">Get in touch</h3>
-        <p class="text-white/80 mt-2">Questions about long stays, team offsites, or group bookings? We’ll tailor a plan.</p>
+        <p class="text-white/80 mt-2">Questions about long stays, team offsites, or group bookings? We'll tailor a plan.</p>
         <div class="mt-5 space-y-2 text-white/90 text-sm">
           <p class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> +233&nbsp;55&nbsp;696&nbsp;6812</p>
           <p class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4"></i> info@lacasamaite.com</p>
@@ -390,232 +380,4 @@
           `\nEmail: ${emailInput ? emailInput.value.trim() : ''}` +
           `\nCheck-in: ${checkInInput ? checkInInput.value : ''}` +
           `\nCheck-out: ${checkOutInput ? checkOutInput.value : ''}` +
-          `\nGuests: ${guestsInput ? guestsInput.value : ''}` +
-          `\nMessage: ${messageInput ? messageInput.value.trim() : ''}`
-        );
-
-        whatsappLink.href = `https://wa.me/${target.replace(/\+/g, '')}?text=${text}`;
-        if (whatsappLink) {
-          whatsappLink.href = `https://wa.me/${target.replace(/\+/g, '')}?text=${text}`;
-        }
-      }
-
-      watchedIds.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.addEventListener('input', updateWhatsappLink);
-        }
-      });
-      updateWhatsappLink();
-
-      const form = document.getElementById('booking-form');
-      const submitButton = form ? form.querySelector('button[type="submit"]') : null;
-      const defaultButtonText = submitButton ? submitButton.textContent : '';
-      const cardErrors = document.getElementById('card-errors');
-      const paymentCopy = document.getElementById('payment-copy');
-      const cardMount = document.getElementById('card-element');
-
-      let stripeInstance = null;
-      let cardElement = null;
-      let stripeConfig = {
-        paymentRequired: false,
-        currency: 'usd',
-        depositAmount: 0
-      };
-
-      function hideCardInterface() {
-        if (cardElement && typeof cardElement.unmount === 'function') {
-          cardElement.unmount();
-          cardElement = null;
-        }
-        if (cardMount) {
-          cardMount.classList.add('hidden');
-          cardMount.innerHTML = '';
-        }
-        if (cardErrors) {
-          cardErrors.textContent = '';
-          cardErrors.classList.add('hidden');
-        }
-      }
-
-      function showCardError(message) {
-        if (!cardErrors) {
-          return;
-        }
-        cardErrors.textContent = message;
-        cardErrors.classList.remove('hidden');
-      }
-
-      function formatCurrency(amount, currencyCode) {
-        if (!amount) {
-          return '';
-        }
-        try {
-          return new Intl.NumberFormat(undefined, {
-            style: 'currency',
-            currency: (currencyCode || 'usd').toUpperCase()
-          }).format(amount / 100);
-        } catch (err) {
-          return `${amount / 100} ${currencyCode || ''}`.trim();
-        }
-      }
-
-      function showPaymentUnavailableCopy() {
-        if (cardMount) {
-          cardMount.classList.add('hidden');
-        }
-        if (cardErrors) {
-          cardErrors.classList.add('hidden');
-        }
-        if (paymentCopy) {
-          paymentCopy.textContent = 'Online payments are currently unavailable. We will contact you to complete your booking.';
-        }
-      }
-
-      async function initialiseStripe() {
-        try {
-          const response = await fetch('/api/stripe-config');
-          if (!response.ok) {
-            throw new Error('Unable to load payment configuration.');
-          }
-          stripeConfig = await response.json();
-          if (stripeConfig.publishableKey && stripeConfig.paymentRequired) {
-            stripeInstance = Stripe(stripeConfig.publishableKey);
-            const elements = stripeInstance.elements();
-            cardElement = elements.create('card', { hidePostalCode: true });
-            if (cardMount) {
-              cardElement.mount('#card-element');
-              cardMount.classList.remove('hidden');
-            }
-            if (cardErrors) {
-              cardErrors.classList.remove('hidden');
-            }
-            if (paymentCopy) {
-              const formatted = formatCurrency(stripeConfig.depositAmount, stripeConfig.currency);
-              paymentCopy.textContent = formatted
-                ? `A ${formatted} deposit is required to secure your stay.`
-                : 'A deposit is required to secure your stay.';
-            }
-          } else if (stripeConfig.publishableKey && !stripeConfig.paymentRequired) {
-            if (cardMount) {
-              cardMount.classList.add('hidden');
-            }
-            if (cardErrors) {
-              cardErrors.classList.add('hidden');
-            }
-            if (paymentCopy) {
-              paymentCopy.textContent = 'No payment is required at this stage. We will confirm your stay shortly.';
-            }
-          } else {
-            showPaymentUnavailableCopy();
-          }
-        } catch (err) {
-          console.error('Stripe initialisation failed', err);
-          showPaymentUnavailableCopy();
-        }
-      }
-
-      async function submitBooking(event) {
-        event.preventDefault();
-        if (!form) {
-          return;
-        }
-        if (cardErrors) {
-          cardErrors.textContent = '';
-        }
-        if (submitButton) {
-          submitButton.disabled = true;
-          submitButton.textContent = 'Processing…';
-        }
-
-        const payload = {
-          name: document.getElementById('name').value.trim(),
-          email: document.getElementById('email').value.trim(),
-          phone: document.getElementById('phone').value.trim(),
-          checkIn: document.getElementById('checkin').value,
-          checkOut: document.getElementById('checkout').value,
-          guests: document.getElementById('guests').value,
-          message: document.getElementById('message').value.trim()
-        };
-
-        try {
-          const initialResponse = await fetch('/api/send-booking', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const initialData = await initialResponse.json();
-          if (!initialResponse.ok) {
-            throw new Error(initialData.error || 'Unable to submit booking.');
-          }
-
-          let paymentIntentId = initialData.payment ? initialData.payment.id : null;
-
-          if (
-            stripeConfig.paymentRequired &&
-            initialData.payment &&
-            initialData.payment.clientSecret &&
-            stripeInstance &&
-            cardElement
-          ) {
-            const confirmation = await stripeInstance.confirmCardPayment(initialData.payment.clientSecret, {
-              payment_method: {
-                card: cardElement,
-                billing_details: {
-                  name: payload.name,
-                  email: payload.email,
-                  phone: payload.phone
-                }
-              }
-            });
-
-            if (confirmation.error) {
-              if (cardErrors) {
-                cardErrors.textContent = confirmation.error.message || 'Payment failed. Please use a different card.';
-              }
-              return;
-            }
-
-            if (confirmation.paymentIntent) {
-              paymentIntentId = confirmation.paymentIntent.id;
-              payload.paymentStatus = confirmation.paymentIntent.status;
-            }
-          }
-
-          await fetch('/api/send-booking', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'confirm',
-              paymentIntentId,
-              ...payload
-            })
-          });
-
-          alert('Thank you! Your booking request has been received. We will contact you shortly.');
-          form.reset();
-          if (cardElement) {
-            cardElement.clear();
-          }
-          updateWhatsappLink();
-        } catch (err) {
-          console.error('Booking submission failed', err);
-          alert(err.message || 'There was an error submitting your booking. Please try again later.');
-        } finally {
-          if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.textContent = defaultButtonText || 'Book Now';
-          }
-        }
-      }
-
-      if (form) {
-        form.addEventListener('submit', submitBooking);
-      }
-
-      initialiseStripe();
-    });
-  </script>
-
-</body>
-</html>
+          `\nGuests: ${guestsInput ? guests
