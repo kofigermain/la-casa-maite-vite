@@ -1,0 +1,276 @@
+const nodemailer = require('nodemailer');
+const https = require('https');
+const { URLSearchParams } = require('url');
+
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+
+const currency = (process.env.STRIPE_CURRENCY || 'usd').toLowerCase();
+const depositAmount = Number.parseInt(process.env.STRIPE_DEPOSIT_AMOUNT, 10);
+const normalizedDeposit = Number.isFinite(depositAmount) && depositAmount > 0 ? depositAmount : 0;
+const paymentRequired = Boolean(stripeSecretKey && normalizedDeposit > 0);
+
+const smtpPort = process.env.SMTP_PORT ? Number.parseInt(process.env.SMTP_PORT, 10) : 465;
+const smtpSecure = process.env.SMTP_SECURE
+  ? process.env.SMTP_SECURE === 'true'
+  : smtpPort === 465;
+
+const mailConfig = {
+  host: process.env.SMTP_HOST,
+  port: smtpPort,
+  secure: smtpSecure,
+  auth: process.env.SMTP_USER && process.env.SMTP_PASS ? {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  } : undefined
+};
+
+const notifyTo = process.env.BOOKING_NOTIFICATION_TO;
+const notifyFrom = process.env.BOOKING_NOTIFICATION_FROM || process.env.SMTP_USER;
+
+const canSendMail = Boolean(
+  mailConfig.host &&
+  mailConfig.port &&
+  mailConfig.auth &&
+  notifyTo &&
+  notifyFrom
+);
+
+const transporter = canSendMail ? nodemailer.createTransport(mailConfig) : null;
+
+function formatCurrency(amount, currencyCode) {
+  if (!amount) {
+    return '0';
+  }
+  const value = amount / 100;
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: (currencyCode || 'usd').toUpperCase()
+    }).format(value);
+  } catch (err) {
+    return `${value} ${currencyCode || ''}`.trim();
+  }
+}
+
+function parseBody(req) {
+  if (req.body && typeof req.body === 'object') {
+    return req.body;
+  }
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', chunk => {
+      data += chunk;
+      if (data.length > 1e6) {
+        const socket = req.socket || req.connection;
+        if (socket && typeof socket.destroy === 'function') {
+          socket.destroy();
+        }
+        reject(new Error('Payload too large'));
+      }
+    });
+    req.on('end', () => {
+      if (!data) {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(data));
+      } catch (err) {
+        reject(err);
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+function validateBooking(payload) {
+  const requiredFields = ['name', 'email', 'phone', 'checkIn', 'checkOut', 'guests'];
+  const missing = requiredFields.filter(field => !payload[field] || String(payload[field]).trim() === '');
+  if (missing.length) {
+    const error = new Error(`Missing required fields: ${missing.join(', ')}`);
+    error.statusCode = 400;
+    throw error;
+  }
+}
+
+function formatBookingDetails(data) {
+  return [
+    `Name: ${data.name}`,
+    `Email: ${data.email}`,
+    `Phone: ${data.phone}`,
+    `Check-in: ${data.checkIn}`,
+    `Check-out: ${data.checkOut}`,
+    `Guests: ${data.guests}`,
+    data.message ? `Message: ${data.message}` : null,
+    data.paymentStatus ? `Payment status: ${data.paymentStatus}` : null,
+    data.paymentIntentId ? `Payment intent: ${data.paymentIntentId}` : null
+  ].filter(Boolean).join('\n');
+}
+
+async function sendNotificationEmail(data) {
+  if (!transporter) {
+    return;
+  }
+  const subjectBase = 'New booking enquiry';
+  const subject = data.paymentStatus && data.paymentStatus.toLowerCase() === 'succeeded'
+    ? `${subjectBase} (deposit received)`
+    : subjectBase;
+
+  const depositDisplay = normalizedDeposit
+    ? formatCurrency(normalizedDeposit, currency)
+    : 'No deposit charged';
+  const textBody = `${formatBookingDetails(data)}\n\nDeposit amount: ${depositDisplay}`;
+  const htmlLines = formatBookingDetails(data)
+    .split('\n')
+    .map(line => `<p>${line}</p>`) // simple formatting
+    .join('');
+
+  await transporter.sendMail({
+    from: notifyFrom,
+    to: notifyTo,
+    subject,
+    text: textBody,
+    html: `<div>${htmlLines}<p><strong>Deposit amount:</strong> ${depositDisplay}</p></div>`
+  });
+}
+
+function stripeRequest(path, { method = 'POST', params } = {}) {
+  if (!stripeSecretKey) {
+    return Promise.reject(new Error('Stripe secret key is not configured.'));
+  }
+
+  return new Promise((resolve, reject) => {
+    const body = params ? new URLSearchParams(params).toString() : null;
+    const request = https.request({
+      hostname: 'api.stripe.com',
+      port: 443,
+      path,
+      method,
+      headers: {
+        Authorization: `Bearer ${stripeSecretKey}`,
+        'Stripe-Version': '2022-11-15',
+        ...(body ? { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) } : {})
+      }
+    }, response => {
+      let data = '';
+      response.on('data', chunk => {
+        data += chunk;
+      });
+      response.on('end', () => {
+        try {
+          const parsed = data ? JSON.parse(data) : {};
+          if (response.statusCode && response.statusCode >= 400) {
+            const error = new Error(parsed.error ? parsed.error.message || 'Stripe request failed' : 'Stripe request failed');
+            error.statusCode = response.statusCode;
+            reject(error);
+            return;
+          }
+          resolve(parsed);
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+
+    request.on('error', reject);
+    if (body) {
+      request.write(body);
+    }
+    request.end();
+  });
+}
+
+async function createPaymentIntent(data) {
+  if (!paymentRequired) {
+    return null;
+  }
+
+  const params = {
+    amount: normalizedDeposit,
+    currency,
+    'automatic_payment_methods[enabled]': 'true',
+    'metadata[name]': data.name,
+    'metadata[email]': data.email,
+    'metadata[phone]': data.phone,
+    'metadata[check_in]': data.checkIn,
+    'metadata[check_out]': data.checkOut,
+    'metadata[guests]': String(data.guests),
+    'metadata[message]': data.message || ''
+  };
+
+  const intent = await stripeRequest('/v1/payment_intents', { params });
+  return intent;
+}
+
+async function handleConfirmAction(payload, res) {
+  const responseData = { success: true };
+  if (payload.paymentIntentId && stripeSecretKey) {
+    try {
+      const intent = await stripeRequest(`/v1/payment_intents/${payload.paymentIntentId}`, { method: 'GET' });
+      responseData.payment = {
+        id: intent.id,
+        status: intent.status
+      };
+      payload.paymentStatus = intent.status;
+    } catch (err) {
+      responseData.payment = { id: payload.paymentIntentId, status: 'unknown' };
+    }
+  }
+  if (!payload.paymentStatus) {
+    payload.paymentStatus = paymentRequired ? 'payment-pending' : 'not-charged';
+  }
+  try {
+    await sendNotificationEmail(payload);
+  } catch (mailErr) {
+    responseData.mailError = 'Failed to send notification email';
+  }
+  res.status(200).json(responseData);
+}
+
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  let payload;
+  try {
+    payload = await parseBody(req);
+  } catch (err) {
+    res.status(400).json({ error: 'Invalid JSON body' });
+    return;
+  }
+
+  if (payload.action === 'confirm') {
+    await handleConfirmAction(payload, res);
+    return;
+  }
+
+  try {
+    validateBooking(payload);
+  } catch (err) {
+    res.status(err.statusCode || 400).json({ error: err.message });
+    return;
+  }
+
+  let paymentIntent = null;
+  try {
+    paymentIntent = await createPaymentIntent(payload);
+  } catch (err) {
+    console.error('Stripe payment intent error', err);
+    res.status(500).json({ error: 'Unable to initiate payment' });
+    return;
+  }
+
+  res.status(200).json({
+    success: true,
+    paymentRequired,
+    payment: paymentIntent ? {
+      clientSecret: paymentIntent.client_secret,
+      id: paymentIntent.id,
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency
+    } : null
+  });
+};
