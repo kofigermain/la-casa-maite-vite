@@ -8,6 +8,7 @@
     "start": "vite preview"
   },
   "dependencies": {
-    "nodemailer": "^6.9.4"
+    "nodemailer": "^6.9.4",
+    "stripe": "^12.9.0"
   }
 }
