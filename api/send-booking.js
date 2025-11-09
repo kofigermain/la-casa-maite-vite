@@ -54,7 +54,7 @@ function formatCurrency(amount, currencyCode) {
 
 function parseBody(req) {
   if (req.body && typeof req.body === 'object') {
-    return req.body;
+    return Promise.resolve(req.body);
   }
   return new Promise((resolve, reject) => {
     let data = '';
@@ -122,7 +122,7 @@ async function sendNotificationEmail(data) {
   const textBody = `${formatBookingDetails(data)}\n\nDeposit amount: ${depositDisplay}`;
   const htmlLines = formatBookingDetails(data)
     .split('\n')
-    .map(line => `<p>${line}</p>`) // simple formatting
+    .map(line => `<p>${line}</p>`)
     .join('');
 
   await transporter.sendMail({
@@ -179,7 +179,7 @@ async function handleConfirmAction(payload, res) {
   res.status(200).json(responseData);
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     res.status(405).json({ error: 'Method not allowed' });
@@ -225,4 +225,4 @@ module.exports = async (req, res) => {
       currency: paymentIntent.currency
     } : null
   });
-};
+}

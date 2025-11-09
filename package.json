@@ -2,10 +2,12 @@
   "name": "la-casa-maite-vite",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "vite build",
     "dev": "vite",
-    "start": "vite preview"
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server.js"
   },
   "dependencies": {
     "nodemailer": "^6.9.4",
