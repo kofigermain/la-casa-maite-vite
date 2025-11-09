@@ -1,4 +1,7 @@
 {
-  "buildCommand": "unzip -o la-casa-maite-vite.zip && cd la-casa-maite-vite && npm install --legacy-peer-deps",
-  "outputDirectory": "la-casa-maite-vite"
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite"
 }
