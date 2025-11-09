@@ -295,6 +295,9 @@
           <div id="card-element" class="border rounded-md p-3 mb-3 hidden"></div>
           <p id="payment-copy" class="text-xs text-gray-500 mb-2"></p>
           <div id="card-errors" class="text-red-600 text-sm mb-2 hidden"></div>
+          <div id="card-element" class="border rounded-md p-3 mb-3"></div>
+          <p id="payment-copy" class="text-xs text-gray-500 mb-2"></p>
+          <div id="card-errors" class="text-red-600 text-sm mb-2"></div>
           <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-semibold">Book Now</button>
         </form>
         <!-- Image and CTA buttons -->
@@ -392,6 +395,9 @@
         );
 
         whatsappLink.href = `https://wa.me/${target.replace(/\+/g, '')}?text=${text}`;
+        if (whatsappLink) {
+          whatsappLink.href = `https://wa.me/${target.replace(/\+/g, '')}?text=${text}`;
+        }
       }
 
       watchedIds.forEach(id => {
@@ -455,7 +461,12 @@
       }
 
       function showPaymentUnavailableCopy() {
-        hideCardInterface();
+        if (cardMount) {
+          cardMount.classList.add('hidden');
+        }
+        if (cardErrors) {
+          cardErrors.classList.add('hidden');
+        }
         if (paymentCopy) {
           paymentCopy.textContent = 'Online payments are currently unavailable. We will contact you to complete your booking.';
         }
@@ -469,12 +480,8 @@
           }
           stripeConfig = await response.json();
           if (stripeConfig.publishableKey && stripeConfig.paymentRequired) {
-            if (typeof window === 'undefined' || typeof window.Stripe !== 'function') {
-              throw new Error('Stripe.js is unavailable.');
-            }
-            stripeInstance = window.Stripe(stripeConfig.publishableKey);
+            stripeInstance = Stripe(stripeConfig.publishableKey);
             const elements = stripeInstance.elements();
-            hideCardInterface();
             cardElement = elements.create('card', { hidePostalCode: true });
             if (cardMount) {
               cardElement.mount('#card-element');
@@ -482,7 +489,6 @@
             }
             if (cardErrors) {
               cardErrors.classList.remove('hidden');
-              cardErrors.textContent = '';
             }
             if (paymentCopy) {
               const formatted = formatCurrency(stripeConfig.depositAmount, stripeConfig.currency);
@@ -491,7 +497,12 @@
                 : 'A deposit is required to secure your stay.';
             }
           } else if (stripeConfig.publishableKey && !stripeConfig.paymentRequired) {
-            hideCardInterface();
+            if (cardMount) {
+              cardMount.classList.add('hidden');
+            }
+            if (cardErrors) {
+              cardErrors.classList.add('hidden');
+            }
             if (paymentCopy) {
               paymentCopy.textContent = 'No payment is required at this stage. We will confirm your stay shortly.';
             }
@@ -511,7 +522,6 @@
         }
         if (cardErrors) {
           cardErrors.textContent = '';
-          cardErrors.classList.add('hidden');
         }
         if (submitButton) {
           submitButton.disabled = true;
@@ -540,9 +550,6 @@
           }
 
           let paymentIntentId = initialData.payment ? initialData.payment.id : null;
-          if (!initialData.success) {
-            throw new Error(initialData.error || 'Unable to submit booking.');
-          }
 
           if (
             stripeConfig.paymentRequired &&
@@ -563,28 +570,19 @@
             });
 
             if (confirmation.error) {
-              showCardError(confirmation.error.message || 'Payment failed. Please use a different card.');
-              throw confirmation.error;
+              if (cardErrors) {
+                cardErrors.textContent = confirmation.error.message || 'Payment failed. Please use a different card.';
+              }
+              return;
             }
 
-            if (!confirmation.paymentIntent) {
-              showCardError('Payment confirmation failed. Please try again.');
-              throw new Error('Missing payment intent after confirmation.');
-            }
-
-            paymentIntentId = confirmation.paymentIntent.id;
-            payload.paymentStatus = confirmation.paymentIntent.status;
-
-            if (
-              confirmation.paymentIntent.status !== 'succeeded' &&
-              confirmation.paymentIntent.status !== 'processing'
-            ) {
-              showCardError('Payment was not completed. Please try another card.');
-              throw new Error('Payment not completed.');
+            if (confirmation.paymentIntent) {
+              paymentIntentId = confirmation.paymentIntent.id;
+              payload.paymentStatus = confirmation.paymentIntent.status;
             }
           }
 
-          const confirmResponse = await fetch('/api/send-booking', {
+          await fetch('/api/send-booking', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -594,19 +592,6 @@
             })
           });
 
-          const confirmData = await confirmResponse.json();
-          if (!confirmResponse.ok || !confirmData.success) {
-            throw new Error(confirmData.error || 'There was an issue confirming your booking.');
-          }
-
-          if (confirmData.payment && confirmData.payment.status) {
-            payload.paymentStatus = confirmData.payment.status;
-          }
-
-          if (confirmData.mailError) {
-            console.warn('Booking notification email failed to send.');
-          }
-
           alert('Thank you! Your booking request has been received. We will contact you shortly.');
           form.reset();
           if (cardElement) {
@@ -615,9 +600,7 @@
           updateWhatsappLink();
         } catch (err) {
           console.error('Booking submission failed', err);
-          if (!cardErrors || cardErrors.classList.contains('hidden')) {
-            alert(err.message || 'There was an error submitting your booking. Please try again later.');
-          }
+          alert(err.message || 'There was an error submitting your booking. Please try again later.');
         } finally {
           if (submitButton) {
             submitButton.disabled = false;
