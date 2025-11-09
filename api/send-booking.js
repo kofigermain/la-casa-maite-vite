@@ -1,13 +1,13 @@
-import nodemailer from 'nodemailer';
-import https from 'https';
-import { URLSearchParams } from 'url';
+const nodemailer = require('nodemailer');
+const Stripe = require('stripe');
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, { apiVersion: '2022-11-15' }) : null;
 
 const currency = (process.env.STRIPE_CURRENCY || 'usd').toLowerCase();
 const depositAmount = Number.parseInt(process.env.STRIPE_DEPOSIT_AMOUNT, 10);
 const normalizedDeposit = Number.isFinite(depositAmount) && depositAmount > 0 ? depositAmount : 0;
-const paymentRequired = Boolean(stripeSecretKey && normalizedDeposit > 0);
+const paymentRequired = Boolean(stripe && normalizedDeposit > 0);
 
 const smtpPort = process.env.SMTP_PORT ? Number.parseInt(process.env.SMTP_PORT, 10) : 465;
 const smtpSecure = process.env.SMTP_SECURE
@@ -134,79 +134,31 @@ async function sendNotificationEmail(data) {
   });
 }
 
-function stripeRequest(path, { method = 'POST', params } = {}) {
-  if (!stripeSecretKey) {
-    return Promise.reject(new Error('Stripe secret key is not configured.'));
-  }
-
-  return new Promise((resolve, reject) => {
-    const body = params ? new URLSearchParams(params).toString() : null;
-    const request = https.request({
-      hostname: 'api.stripe.com',
-      port: 443,
-      path,
-      method,
-      headers: {
-        Authorization: `Bearer ${stripeSecretKey}`,
-        'Stripe-Version': '2022-11-15',
-        ...(body ? { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) } : {})
-      }
-    }, response => {
-      let data = '';
-      response.on('data', chunk => {
-        data += chunk;
-      });
-      response.on('end', () => {
-        try {
-          const parsed = data ? JSON.parse(data) : {};
-          if (response.statusCode && response.statusCode >= 400) {
-            const error = new Error(parsed.error ? parsed.error.message || 'Stripe request failed' : 'Stripe request failed');
-            error.statusCode = response.statusCode;
-            reject(error);
-            return;
-          }
-          resolve(parsed);
-        } catch (err) {
-          reject(err);
-        }
-      });
-    });
-
-    request.on('error', reject);
-    if (body) {
-      request.write(body);
-    }
-    request.end();
-  });
-}
-
 async function createPaymentIntent(data) {
   if (!paymentRequired) {
     return null;
   }
-
-  const params = {
+  const intent = await stripe.paymentIntents.create({
     amount: normalizedDeposit,
     currency,
-    'automatic_payment_methods[enabled]': 'true',
-    'metadata[name]': data.name,
-    'metadata[email]': data.email,
-    'metadata[phone]': data.phone,
-    'metadata[check_in]': data.checkIn,
-    'metadata[check_out]': data.checkOut,
-    'metadata[guests]': String(data.guests),
-    'metadata[message]': data.message || ''
-  };
-
-  const intent = await stripeRequest('/v1/payment_intents', { params });
+    metadata: {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      check_in: data.checkIn,
+      check_out: data.checkOut,
+      guests: String(data.guests),
+      message: data.message || ''
+    }
+  });
   return intent;
 }
 
 async function handleConfirmAction(payload, res) {
   const responseData = { success: true };
-  if (payload.paymentIntentId && stripeSecretKey) {
+  if (payload.paymentIntentId && stripe) {
     try {
-      const intent = await stripeRequest(`/v1/payment_intents/${payload.paymentIntentId}`, { method: 'GET' });
+      const intent = await stripe.paymentIntents.retrieve(payload.paymentIntentId);
       responseData.payment = {
         id: intent.id,
         status: intent.status
