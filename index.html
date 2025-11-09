@@ -292,6 +292,9 @@
             <label class="text-sm text-gray-500">Message</label>
             <textarea id="message" name="message" rows="4" placeholder="Any special requests?" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
           </div>
+          <div id="card-element" class="border rounded-md p-3 mb-3 hidden"></div>
+          <p id="payment-copy" class="text-xs text-gray-500 mb-2"></p>
+          <div id="card-errors" class="text-red-600 text-sm mb-2 hidden"></div>
           <div id="card-element" class="border rounded-md p-3 mb-3"></div>
           <p id="payment-copy" class="text-xs text-gray-500 mb-2"></p>
           <div id="card-errors" class="text-red-600 text-sm mb-2"></div>
@@ -368,17 +371,30 @@
       const watchedIds = ['name', 'email', 'phone', 'checkin', 'checkout', 'guests', 'message'];
 
       function updateWhatsappLink() {
-        const name = document.getElementById('name').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const checkIn = document.getElementById('checkin').value;
-        const checkOut = document.getElementById('checkout').value;
-        const guests = document.getElementById('guests').value;
-        const message = document.getElementById('message').value.trim();
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const checkInInput = document.getElementById('checkin');
+        const checkOutInput = document.getElementById('checkout');
+        const guestsInput = document.getElementById('guests');
+        const messageInput = document.getElementById('message');
+
+        if (!whatsappLink) {
+          return;
+        }
+
         const target = '+233556966812';
         const text = encodeURIComponent(
-          `Booking enquiry — La Casa Maite%0A\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\nCheck-in: ${checkIn}\nCheck-out: ${checkOut}\nGuests: ${guests}\nMessage: ${message}`
+          `Booking enquiry — La Casa Maite\n\nName: ${nameInput ? nameInput.value.trim() : ''}` +
+          `\nPhone: ${phoneInput ? phoneInput.value.trim() : ''}` +
+          `\nEmail: ${emailInput ? emailInput.value.trim() : ''}` +
+          `\nCheck-in: ${checkInInput ? checkInInput.value : ''}` +
+          `\nCheck-out: ${checkOutInput ? checkOutInput.value : ''}` +
+          `\nGuests: ${guestsInput ? guestsInput.value : ''}` +
+          `\nMessage: ${messageInput ? messageInput.value.trim() : ''}`
         );
+
+        whatsappLink.href = `https://wa.me/${target.replace(/\+/g, '')}?text=${text}`;
         if (whatsappLink) {
           whatsappLink.href = `https://wa.me/${target.replace(/\+/g, '')}?text=${text}`;
         }
@@ -406,6 +422,29 @@
         currency: 'usd',
         depositAmount: 0
       };
+
+      function hideCardInterface() {
+        if (cardElement && typeof cardElement.unmount === 'function') {
+          cardElement.unmount();
+          cardElement = null;
+        }
+        if (cardMount) {
+          cardMount.classList.add('hidden');
+          cardMount.innerHTML = '';
+        }
+        if (cardErrors) {
+          cardErrors.textContent = '';
+          cardErrors.classList.add('hidden');
+        }
+      }
+
+      function showCardError(message) {
+        if (!cardErrors) {
+          return;
+        }
+        cardErrors.textContent = message;
+        cardErrors.classList.remove('hidden');
+      }
 
       function formatCurrency(amount, currencyCode) {
         if (!amount) {
