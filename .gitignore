@@ -1,5 +1,0 @@
-# artifacts
-*.zip
-dist/
-.vercel/
-.DS_Store
