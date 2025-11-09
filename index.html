@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Casa Maite — Aparthotel in Accra, Ghana</title>
+  <!-- Tailwind CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Lucide icons -->
+  <script defer src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+  <script src="https://js.stripe.com/v3"></script>
+</head>
+<body class="min-h-screen bg-white text-gray-900">
+  <!-- Top navigation bar -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-9 w-9 rounded-2xl bg-gray-800 text-white grid place-items-center font-semibold">LM</div>
+        <div>
+          <p class="text-lg font-semibold tracking-tight">La Casa Maite</p>
+          <p class="text-xs text-gray-500 flex items-center gap-1">
+            <i data-lucide="map-pin" class="w-3 h-3"></i> Bojo Beach, Accra — Ghana
+          </p>
+        </div>
+      </div>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#suites" class="hover:text-gray-600">Suites</a>
+        <a href="#amenities" class="hover:text-gray-600">Amenities</a>
+        <a href="#location" class="hover:text-gray-600">Location</a>
+        <a href="#gallery" class="hover:text-gray-600">Gallery</a>
+        <a href="#contact" class="hover:text-gray-600">Contact</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <a href="#book" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm">Book now</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero section -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0">
+      <!-- Hero background image -->
+      <img src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=2000&auto=format&fit=crop" alt="Bojo Beach area" class="h-full w-full object-cover" />
+      <div class="absolute inset-0 bg-black/40"></div>
+    </div>
+    <div class="relative mx-auto max-w-7xl px-4 py-28 md:py-40">
+      <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight">Aparthotel living by Bojo Beach</h1>
+      <p class="mt-4 max-w-2xl text-white/90 text-lg">
+        Your coastal base in Accra. Contemporary suites, hotel services, and the freedom of home — five minutes from the lagoon crossing to Bojo Beach.
+      </p>
+      <div class="mt-8 flex flex-col sm:flex-row items-center gap-3">
+        <a href="#book" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-base flex items-center gap-2">
+          Check availability
+          <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </a>
+        <a href="#suites" class="bg-white/90 backdrop-blur hover:bg-white text-gray-900 px-6 py-3 rounded-xl text-base border border-gray-300">Explore suites</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust strip -->
+  <section class="bg-gray-50 border-y">
+    <div class="mx-auto max-w-7xl px-4 py-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="flex items-center gap-3">
+        <i data-lucide="clock" class="w-5 h-5 text-gray-600"></i>
+        <p class="text-sm text-gray-700">Flexible stays — nightly & monthly</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <i data-lucide="shield-check" class="w-5 h-5 text-gray-600"></i>
+        <p class="text-sm text-gray-700">Safe, gated & monitored</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <i data-lucide="wifi" class="w-5 h-5 text-gray-600"></i>
+        <p class="text-sm text-gray-700">Unlimited high‑speed internet</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <i data-lucide="waves" class="w-5 h-5 text-gray-600"></i>
+        <p class="text-sm text-gray-700">5‑min to Bojo Beach</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Suites & Apartments section -->
+  <section id="suites" class="mx-auto max-w-7xl px-4 py-16">
+    <div class="mb-8">
+      <h2 class="text-3xl md:text-4xl font-semibold tracking-tight">Suites & Apartments</h2>
+      <p class="text-gray-600 mt-2 max-w-2xl">
+        Pick the space that fits your trip — business, family, or a relaxed beach break.
+      </p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- Studio Suite -->
+      <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition">
+        <div class="h-48 w-full overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1595526114035-4d5f3ac3b524?q=80&w=1600&auto=format&fit=crop" alt="Studio Suite" class="h-full w-full object-cover hover:scale-105 transition-transform" />
+        </div>
+        <div class="p-5">
+          <h3 class="text-xl font-semibold mb-2">Studio Suite</h3>
+          <p class="text-gray-600 mb-3">Thoughtfully designed studio with kitchenette, work desk, and balcony — perfect for solo travellers or couples.</p>
+          <ul class="text-sm text-gray-700 grid grid-cols-2 gap-2 mb-4">
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>24–30 m²</li>
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>Queen bed</li>
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>Kitchenette</li>
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>Smart TV</li>
+          </ul>
+          <a href="#book" class="block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-xl">Book Now</a>
+        </div>
+      </div>
+      <!-- One Bedroom Apartment -->
+      <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition">
+        <div class="h-48 w-full overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?q=80&w=1600&auto=format&fit=crop" alt="One-Bedroom Apartment" class="h-full w-full object-cover hover:scale-105 transition-transform" />
+        </div>
+        <div class="p-5">
+          <h3 class="text-xl font-semibold mb-2">One-Bedroom Apartment</h3>
+          <p class="text-gray-600 mb-3">Separate living area and bedroom for extra comfort on longer stays — business‑ready and family‑friendly.</p>
+          <ul class="text-sm text-gray-700 grid grid-cols-2 gap-2 mb-4">
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>42–55 m²</li>
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>King bed</li>
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>Sofa bed</li>
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>Dining nook</li>
+          </ul>
+          <a href="#book" class="block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-xl">Book Now</a>
+        </div>
+      </div>
+      <!-- Two Bedroom Family Suite -->
+      <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition">
+        <div class="h-48 w-full overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1545324418-689d2141e8b4?q=80&w=1600&auto=format&fit=crop" alt="Two-Bedroom Family Suite" class="h-full w-full object-cover hover:scale-105 transition-transform" />
+        </div>
+        <div class="p-5">
+          <h3 class="text-xl font-semibold mb-2">Two-Bedroom Family Suite</h3>
+          <p class="text-gray-600 mb-3">Spacious apartment with two bedrooms, full kitchen, and private terrace — ideal for groups and families.</p>
+          <ul class="text-sm text-gray-700 grid grid-cols-2 gap-2 mb-4">
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>70–85 m²</li>
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>2 Bedrooms</li>
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>Full kitchen</li>
+            <li class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i>Private terrace</li>
+          </ul>
+          <a href="#book" class="block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-xl">Book Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Amenities section -->
+  <section id="amenities" class="bg-gray-50">
+    <div class="mx-auto max-w-7xl px-4 py-16">
+      <div class="mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold tracking-tight">Amenities</h2>
+        <p class="text-gray-600 mt-2 max-w-2xl">Hotel‑style service meets apartment comfort.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Amenity cards -->
+        <div class="rounded-2xl bg-white p-5 flex items-center gap-3 shadow-sm">
+          <i data-lucide="wifi" class="w-6 h-6 text-gray-700"></i>
+          <span class="text-sm font-medium">Fast Wi‑Fi</span>
+        </div>
+        <div class="rounded-2xl bg-white p-5 flex items-center gap-3 shadow-sm">
+          <i data-lucide="bed" class="w-6 h-6 text-gray-700"></i>
+          <span class="text-sm font-medium">Premium bedding</span>
+        </div>
+        <div class="rounded-2xl bg-white p-5 flex items-center gap-3 shadow-sm">
+          <i data-lucide="utensils" class="w-6 h-6 text-gray-700"></i>
+          <span class="text-sm font-medium">Kitchenettes</span>
+        </div>
+        <div class="rounded-2xl bg-white p-5 flex items-center gap-3 shadow-sm">
+          <i data-lucide="car" class="w-6 h-6 text-gray-700"></i>
+          <span class="text-sm font-medium">Secure parking</span>
+        </div>
+        <div class="rounded-2xl bg-white p-5 flex items-center gap-3 shadow-sm">
+          <i data-lucide="waves" class="w-6 h-6 text-gray-700"></i>
+          <span class="text-sm font-medium">Near Bojo Beach</span>
+        </div>
+        <div class="rounded-2xl bg-white p-5 flex items-center gap-3 shadow-sm">
+          <i data-lucide="sun" class="w-6 h-6 text-gray-700"></i>
+          <span class="text-sm font-medium">Air conditioning</span>
+        </div>
+        <div class="rounded-2xl bg-white p-5 flex items-center gap-3 shadow-sm">
+          <i data-lucide="shield-check" class="w-6 h-6 text-gray-700"></i>
+          <span class="text-sm font-medium">24/7 security</span>
+        </div>
+        <div class="rounded-2xl bg-white p-5 flex items-center gap-3 shadow-sm">
+          <i data-lucide="sparkles" class="w-6 h-6 text-gray-700"></i>
+          <span class="text-sm font-medium">Daily housekeeping</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Location section -->
+  <section id="location" class="mx-auto max-w-7xl px-4 py-16">
+    <div class="grid md:grid-cols-2 gap-8 items-start">
+      <div>
+        <h2 class="text-3xl md:text-4xl font-semibold tracking-tight">Location</h2>
+        <p class="text-gray-600 mt-3">
+          We are in the Bojo Beach enclave of Accra, minutes from the peaceful Densu River lagoon crossing. Kotoka International Airport is ~45–60 minutes by car depending on traffic.
+        </p>
+        <ul class="mt-5 space-y-2 text-gray-700 text-sm">
+          <li class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Bojo Beach Rd, Accra, Ghana</li>
+          <li class="flex items-center gap-2"><i data-lucide="car" class="w-4 h-4"></i> Secure on‑site parking. Ride‑hailing friendly.</li>
+          <li class="flex items-center gap-2"><i data-lucide="waves" class="w-4 h-4"></i> 5‑minute lagoon ride to Bojo Beach.</li>
+        </ul>
+      </div>
+      <div class="rounded-2xl overflow-hidden shadow-lg">
+        <iframe title="La Casa Maite — Map" src="https://www.google.com/maps?q=Germain%20Maite%20Home%20Bortianor%20Ghana&output=embed" class="w-full h-80 md:h-96 border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery section -->
+  <section id="gallery" class="bg-gray-50">
+    <div class="mx-auto max-w-7xl px-4 py-16">
+      <div class="mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold tracking-tight">Gallery</h2>
+        <p class="text-gray-600 mt-2 max-w-2xl">A snapshot of life at La Casa Maite and the Bojo Beach surroundings.</p>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <!-- eight images with fallback -->
+        <div class="aspect-w-4 aspect-h-3 overflow-hidden rounded-2xl relative">
+          <img src="https://images.unsplash.com/photo-1540569014015-19a7be504e3a?q=80&w=1200&auto=format&fit=crop" alt="Gallery 1" class="w-full h-full object-cover hover:scale-105 transition-transform" />
+        </div>
+        <div class="aspect-w-4 aspect-h-3 overflow-hidden rounded-2xl relative">
+          <img src="https://images.unsplash.com/photo-1533537561602-43c6aa3d5d8a?q=80&w=1200&auto=format&fit=crop" alt="Gallery 2" class="w-full h-full object-cover hover:scale-105 transition-transform" />
+        </div>
+        <div class="aspect-w-4 aspect-h-3 overflow-hidden rounded-2xl relative">
+          <img src="https://images.unsplash.com/photo-1501117716987-c8e2a9ce87f0?q=80&w=1200&auto=format&fit=crop" alt="Gallery 3" class="w-full h-full object-cover hover:scale-105 transition-transform" />
+        </div>
+        <div class="aspect-w-4 aspect-h-3 overflow-hidden rounded-2xl relative">
+          <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop" alt="Gallery 4" class="w-full h-full object-cover hover:scale-105 transition-transform" />
+        </div>
+        <div class="aspect-w-4 aspect-h-3 overflow-hidden rounded-2xl relative">
+          <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=1200&auto=format&fit=crop" alt="Gallery 5" class="w-full h-full object-cover hover:scale-105 transition-transform" />
+        </div>
+        <div class="aspect-w-4 aspect-h-3 overflow-hidden rounded-2xl relative">
+          <img src="https://images.unsplash.com/photo-1521401830884-6c03f047b3b3?q=80&w=1200&auto=format&fit=crop" alt="Gallery 6" class="w-full h-full object-cover hover:scale-105 transition-transform" />
+        </div>
+        <div class="aspect-w-4 aspect-h-3 overflow-hidden rounded-2xl relative">
+          <img src="https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?q=80&w=1200&auto=format&fit=crop" alt="Gallery 7" class="w-full h-full object-cover hover:scale-105 transition-transform" />
+        </div>
+        <div class="aspect-w-4 aspect-h-3 overflow-hidden rounded-2xl relative">
+          <img src="https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1200&auto=format&fit=crop" alt="Gallery 8" class="w-full h-full object-cover hover:scale-105 transition-transform" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Booking section -->
+  <section id="book" class="mx-auto max-w-7xl px-4 py-16">
+    <div class="mb-8">
+      <h2 class="text-3xl md:text-4xl font-semibold tracking-tight">Check availability</h2>
+      <p class="text-gray-600 mt-2 max-w-2xl">Tell us your dates and we’ll confirm the best rate.</p>
+    </div>
+    <div class="rounded-2xl bg-white shadow-lg overflow-hidden">
+      <div class="grid md:grid-cols-2 gap-6 p-6">
+        <!-- Form fields -->
+        <form id="booking-form" class="space-y-4">
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-sm text-gray-500">Check‑in</label>
+              <input type="date" id="checkin" name="checkIn" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label class="text-sm text-gray-500">Check‑out</label>
+              <input type="date" id="checkout" name="checkOut" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-sm text-gray-500">Guests</label>
+              <input type="number" id="guests" name="guests" min="1" max="8" value="2" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label class="text-sm text-gray-500">Full name</label>
+              <input type="text" id="name" name="name" placeholder="Your name" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-sm text-gray-500">Phone</label>
+              <input type="tel" id="phone" name="phone" placeholder="WhatsApp or mobile" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label class="text-sm text-gray-500">Email</label>
+              <input type="email" id="email" name="email" placeholder="you@example.com" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          <div>
+            <label class="text-sm text-gray-500">Message</label>
+            <textarea id="message" name="message" rows="4" placeholder="Any special requests?" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+          <div id="card-element" class="border rounded-md p-3 mb-3"></div>
+          <div id="card-errors" class="text-red-600 text-sm mb-2"></div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-semibold">Book Now</button>
+        </form>
+        <!-- Image and CTA buttons -->
+        <div class="space-y-4">
+          <div class="rounded-2xl overflow-hidden h-64 md:h-[280px] bg-gray-100">
+            <img src="https://images.unsplash.com/photo-1501117716987-c8e2a9ce87f0?q=80&w=1600&auto=format&fit=crop" alt="La Casa Maite exterior" class="h-full w-full object-cover" />
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <a id="whatsapp-link" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl">
+              <i data-lucide="message-circle" class="w-5 h-5"></i> Enquire on WhatsApp
+            </a>
+            <a id="email-link" href="mailto:info@lacasamaite.com" class="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-900 hover:bg-gray-100 px-4 py-2 rounded-xl">
+              <i data-lucide="mail" class="w-5 h-5"></i> Email us
+            </a>
+          </div>
+          <p class="text-xs text-gray-500">By sending an enquiry you consent to be contacted about your stay.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact section -->
+  <section id="contact" class="bg-gray-900 text-white">
+    <div class="mx-auto max-w-7xl px-4 py-16 grid md:grid-cols-3 gap-8">
+      <div>
+        <h3 class="text-2xl font-semibold tracking-tight">Get in touch</h3>
+        <p class="text-white/80 mt-2">Questions about long stays, team offsites, or group bookings? We’ll tailor a plan.</p>
+        <div class="mt-5 space-y-2 text-white/90 text-sm">
+          <p class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> +233&nbsp;55&nbsp;696&nbsp;6812</p>
+          <p class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4"></i> info@lacasamaite.com</p>
+          <p class="flex items-center gap-2"><i data-lucide="instagram" class="w-4 h-4"></i> @la_casa_maite</p>
+        </div>
+      </div>
+      <div class="md:col-span-2 grid sm:grid-cols-2 gap-4">
+        <div class="bg-white text-gray-900 rounded-2xl p-5 shadow-sm">
+          <h4 class="text-base font-semibold mb-2">Corporate & monthly stays</h4>
+          <p class="text-sm text-gray-700">Prefer an invoice, consolidated billing, or custom services? Ask for our monthly rates and inclusions.</p>
+        </div>
+        <div class="bg-white text-gray-900 rounded-2xl p-5 shadow-sm">
+          <h4 class="text-base font-semibold mb-2">Beach & experiences</h4>
+          <p class="text-sm text-gray-700">Curated local experiences around Bojo Beach, Gawu Lagoon, and beyond — from kayaking to food tours.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t">
+    <div class="mx-auto max-w-7xl px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-3">
+      <p class="text-sm text-gray-600">© <span id="year"></span> La Casa Maite — Accra, Ghana</p>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="#" class="text-gray-600 hover:text-gray-900">Privacy</a>
+        <a href="#" class="text-gray-600 hover:text-gray-900">Terms</a>
+        <a href="#" class="text-gray-600 hover:text-gray-900">Accessibility</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize icons and dynamic elements once the DOM is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+      // Set the current year in the footer
+      document.getElementById('year').textContent = new Date().getFullYear();
+      // Generate WhatsApp link based on form fields
+      function updateWhatsappLink() {
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const checkIn = document.getElementById('checkin').value;
+        const checkOut = document.getElementById('checkout').value;
+        const guests = document.getElementById('guests').value;
+        const message = document.getElementById('message').value.trim();
+        const target = '+233556966812';
+        const text = encodeURIComponent(
+          `Booking enquiry — La Casa Maite%0A\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\nCheck-in: ${checkIn}\nCheck-out: ${checkOut}\nGuests: ${guests}\nMessage: ${message}`
+        );
+        const url = `https://wa.me/${target.replace(/\+/g, '')}?text=${text}`;
+        document.getElementById('whatsapp-link').href = url;
+      }
+      // Attach update listener to form inputs
+      ['name','email','phone','checkin','checkout','guests','message'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', updateWhatsappLink);
+      });
+      updateWhatsappLink();
+      // Booking form submission handler
+      const form = document.getElementById('booking-form');
+      form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const data = {
+          name: document.getElementById('name').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          checkIn: document.getElementById('checkin').value,
+          checkOut: document.getElementById('checkout').value,
+          guests: document.getElementById('guests').value,
+          message: document.getElementById('message').value.trim()
+        };
+        try {
+          const response = await fetch('/api/send-booking', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          if (response.ok) {
+            alert('Thank you for your enquiry! We will get back to you shortly.');
+            form.reset();
+            updateWhatsappLink();
+          } else {
+            const text = await response.text();
+            alert('There was an error sending your message: ' + text);
+          }
+        } catch (err) {
+          alert('An unexpected error occurred. Please try again later.');
+          console.error(err);
+        }
+      });
+    });
+  </script>
+
+<script>
+(function(){
+  // Expect a global STRIPE_PUBLISHABLE_KEY to be set via hosting env.
+  const pk = window.STRIPE_PUBLISHABLE_KEY || "";
+  const form = document.getElementById('booking-form');
+  let stripe = null;
+  let card = null;
+
+  function initStripeIfNeeded(){
+    if (!pk) { return null; }
+    if (!stripe) {
+      stripe = Stripe(pk);
+      const elements = stripe.elements();
+      card = elements.create('card');
+      const mount = document.getElementById('card-element');
+      if (mount && !mount.dataset.mounted) {
+        card.mount('#card-element');
+        mount.dataset.mounted = 'true';
+      }
+    }
+    return stripe;
+  }
+
+  initStripeIfNeeded();
+
+  async function handleSubmit(e){
+    e.preventDefault();
+    const payload = {
+      checkIn: document.getElementById('checkIn').value,
+      checkOut: document.getElementById('checkOut').value,
+      guests: document.getElementById('guests').value,
+      name: document.getElementById('name').value,
+      phone: document.getElementById('phone').value,
+      email: document.getElementById('email').value,
+      message: document.getElementById('message').value
+    };
+    const resp = await fetch('/api/send-booking', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+
+    if (pk && data && data.payment && data.payment.clientSecret && card) {
+      const result = await stripe.confirmCardPayment(data.payment.clientSecret, {
+        payment_method: { card, billing_details: { name: payload.name, email: payload.email, phone: payload.phone } }
+      });
+      if (result.error) {
+        document.getElementById('card-errors').textContent = result.error.message || 'Payment failed.';
+        return;
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+        alert('Booking confirmed. Payment received.');
+        form.reset();
+        return;
+      }
+    }
+    // Fallback: enquiry sent
+    alert('Request received. We will confirm shortly.');
+    form.reset();
+  }
+
+  if (form) {
+    form.addEventListener('submit', handleSubmit);
+  }
+})();
+</script>
+
+</body>
+</html>
