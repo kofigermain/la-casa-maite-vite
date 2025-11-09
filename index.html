@@ -293,6 +293,7 @@
             <textarea id="message" name="message" rows="4" placeholder="Any special requests?" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
           </div>
           <div id="card-element" class="border rounded-md p-3 mb-3"></div>
+          <p id="payment-copy" class="text-xs text-gray-500 mb-2"></p>
           <div id="card-errors" class="text-red-600 text-sm mb-2"></div>
           <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-semibold">Book Now</button>
         </form>
@@ -353,14 +354,19 @@
   </footer>
 
   <script>
-    // Initialize icons and dynamic elements once the DOM is loaded
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', () => {
       if (window.lucide) {
         window.lucide.createIcons();
       }
-      // Set the current year in the footer
-      document.getElementById('year').textContent = new Date().getFullYear();
-      // Generate WhatsApp link based on form fields
+
+      const yearEl = document.getElementById('year');
+      if (yearEl) {
+        yearEl.textContent = new Date().getFullYear();
+      }
+
+      const whatsappLink = document.getElementById('whatsapp-link');
+      const watchedIds = ['name', 'email', 'phone', 'checkin', 'checkout', 'guests', 'message'];
+
       function updateWhatsappLink() {
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
@@ -373,20 +379,117 @@
         const text = encodeURIComponent(
           `Booking enquiry — La Casa Maite%0A\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\nCheck-in: ${checkIn}\nCheck-out: ${checkOut}\nGuests: ${guests}\nMessage: ${message}`
         );
-        const url = `https://wa.me/${target.replace(/\+/g, '')}?text=${text}`;
-        document.getElementById('whatsapp-link').href = url;
+        if (whatsappLink) {
+          whatsappLink.href = `https://wa.me/${target.replace(/\+/g, '')}?text=${text}`;
+        }
       }
-      // Attach update listener to form inputs
-      ['name','email','phone','checkin','checkout','guests','message'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('input', updateWhatsappLink);
+
+      watchedIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.addEventListener('input', updateWhatsappLink);
+        }
       });
       updateWhatsappLink();
-      // Booking form submission handler
+
       const form = document.getElementById('booking-form');
-      form.addEventListener('submit', async function (event) {
+      const submitButton = form ? form.querySelector('button[type="submit"]') : null;
+      const defaultButtonText = submitButton ? submitButton.textContent : '';
+      const cardErrors = document.getElementById('card-errors');
+      const paymentCopy = document.getElementById('payment-copy');
+      const cardMount = document.getElementById('card-element');
+
+      let stripeInstance = null;
+      let cardElement = null;
+      let stripeConfig = {
+        paymentRequired: false,
+        currency: 'usd',
+        depositAmount: 0
+      };
+
+      function formatCurrency(amount, currencyCode) {
+        if (!amount) {
+          return '';
+        }
+        try {
+          return new Intl.NumberFormat(undefined, {
+            style: 'currency',
+            currency: (currencyCode || 'usd').toUpperCase()
+          }).format(amount / 100);
+        } catch (err) {
+          return `${amount / 100} ${currencyCode || ''}`.trim();
+        }
+      }
+
+      function showPaymentUnavailableCopy() {
+        if (cardMount) {
+          cardMount.classList.add('hidden');
+        }
+        if (cardErrors) {
+          cardErrors.classList.add('hidden');
+        }
+        if (paymentCopy) {
+          paymentCopy.textContent = 'Online payments are currently unavailable. We will contact you to complete your booking.';
+        }
+      }
+
+      async function initialiseStripe() {
+        try {
+          const response = await fetch('/api/stripe-config');
+          if (!response.ok) {
+            throw new Error('Unable to load payment configuration.');
+          }
+          stripeConfig = await response.json();
+          if (stripeConfig.publishableKey && stripeConfig.paymentRequired) {
+            stripeInstance = Stripe(stripeConfig.publishableKey);
+            const elements = stripeInstance.elements();
+            cardElement = elements.create('card', { hidePostalCode: true });
+            if (cardMount) {
+              cardElement.mount('#card-element');
+              cardMount.classList.remove('hidden');
+            }
+            if (cardErrors) {
+              cardErrors.classList.remove('hidden');
+            }
+            if (paymentCopy) {
+              const formatted = formatCurrency(stripeConfig.depositAmount, stripeConfig.currency);
+              paymentCopy.textContent = formatted
+                ? `A ${formatted} deposit is required to secure your stay.`
+                : 'A deposit is required to secure your stay.';
+            }
+          } else if (stripeConfig.publishableKey && !stripeConfig.paymentRequired) {
+            if (cardMount) {
+              cardMount.classList.add('hidden');
+            }
+            if (cardErrors) {
+              cardErrors.classList.add('hidden');
+            }
+            if (paymentCopy) {
+              paymentCopy.textContent = 'No payment is required at this stage. We will confirm your stay shortly.';
+            }
+          } else {
+            showPaymentUnavailableCopy();
+          }
+        } catch (err) {
+          console.error('Stripe initialisation failed', err);
+          showPaymentUnavailableCopy();
+        }
+      }
+
+      async function submitBooking(event) {
         event.preventDefault();
-        const data = {
+        if (!form) {
+          return;
+        }
+        if (cardErrors) {
+          cardErrors.textContent = '';
+        }
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = 'Processing…';
+        }
+
+        const payload = {
           name: document.getElementById('name').value.trim(),
           email: document.getElementById('email').value.trim(),
           phone: document.getElementById('phone').value.trim(),
@@ -395,94 +498,85 @@
           guests: document.getElementById('guests').value,
           message: document.getElementById('message').value.trim()
         };
+
         try {
-          const response = await fetch('/api/send-booking', {
+          const initialResponse = await fetch('/api/send-booking', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(payload)
           });
-          if (response.ok) {
-            alert('Thank you for your enquiry! We will get back to you shortly.');
-            form.reset();
-            updateWhatsappLink();
-          } else {
-            const text = await response.text();
-            alert('There was an error sending your message: ' + text);
+          const initialData = await initialResponse.json();
+          if (!initialResponse.ok) {
+            throw new Error(initialData.error || 'Unable to submit booking.');
           }
+
+          let paymentIntentId = initialData.payment ? initialData.payment.id : null;
+
+          if (
+            stripeConfig.paymentRequired &&
+            initialData.payment &&
+            initialData.payment.clientSecret &&
+            stripeInstance &&
+            cardElement
+          ) {
+            const confirmation = await stripeInstance.confirmCardPayment(initialData.payment.clientSecret, {
+              payment_method: {
+                card: cardElement,
+                billing_details: {
+                  name: payload.name,
+                  email: payload.email,
+                  phone: payload.phone
+                }
+              }
+            });
+
+            if (confirmation.error) {
+              if (cardErrors) {
+                cardErrors.textContent = confirmation.error.message || 'Payment failed. Please use a different card.';
+              }
+              return;
+            }
+
+            if (confirmation.paymentIntent) {
+              paymentIntentId = confirmation.paymentIntent.id;
+              payload.paymentStatus = confirmation.paymentIntent.status;
+            }
+          }
+
+          await fetch('/api/send-booking', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'confirm',
+              paymentIntentId,
+              ...payload
+            })
+          });
+
+          alert('Thank you! Your booking request has been received. We will contact you shortly.');
+          form.reset();
+          if (cardElement) {
+            cardElement.clear();
+          }
+          updateWhatsappLink();
         } catch (err) {
-          alert('An unexpected error occurred. Please try again later.');
-          console.error(err);
+          console.error('Booking submission failed', err);
+          alert(err.message || 'There was an error submitting your booking. Please try again later.');
+        } finally {
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = defaultButtonText || 'Book Now';
+          }
         }
-      });
+      }
+
+      if (form) {
+        form.addEventListener('submit', submitBooking);
+      }
+
+      initialiseStripe();
     });
   </script>
-
-<script>
-(function(){
-  // Expect a global STRIPE_PUBLISHABLE_KEY to be set via hosting env.
-  const pk = window.STRIPE_PUBLISHABLE_KEY || "";
-  const form = document.getElementById('booking-form');
-  let stripe = null;
-  let card = null;
-
-  function initStripeIfNeeded(){
-    if (!pk) { return null; }
-    if (!stripe) {
-      stripe = Stripe(pk);
-      const elements = stripe.elements();
-      card = elements.create('card');
-      const mount = document.getElementById('card-element');
-      if (mount && !mount.dataset.mounted) {
-        card.mount('#card-element');
-        mount.dataset.mounted = 'true';
-      }
-    }
-    return stripe;
-  }
-
-  initStripeIfNeeded();
-
-  async function handleSubmit(e){
-    e.preventDefault();
-    const payload = {
-      checkIn: document.getElementById('checkIn').value,
-      checkOut: document.getElementById('checkOut').value,
-      guests: document.getElementById('guests').value,
-      name: document.getElementById('name').value,
-      phone: document.getElementById('phone').value,
-      email: document.getElementById('email').value,
-      message: document.getElementById('message').value
-    };
-    const resp = await fetch('/api/send-booking', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const data = await resp.json();
-
-    if (pk && data && data.payment && data.payment.clientSecret && card) {
-      const result = await stripe.confirmCardPayment(data.payment.clientSecret, {
-        payment_method: { card, billing_details: { name: payload.name, email: payload.email, phone: payload.phone } }
-      });
-      if (result.error) {
-        document.getElementById('card-errors').textContent = result.error.message || 'Payment failed.';
-        return;
-      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
-        alert('Booking confirmed. Payment received.');
-        form.reset();
-        return;
-      }
-    }
-    // Fallback: enquiry sent
-    alert('Request received. We will confirm shortly.');
-    form.reset();
-  }
-
-  if (form) {
-    form.addEventListener('submit', handleSubmit);
-  }
-})();
-</script>
 
 </body>
 </html>
