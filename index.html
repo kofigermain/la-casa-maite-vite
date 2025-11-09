@@ -308,7 +308,6 @@
       </div>
     </div>
   </section>
-
   <!-- Contact section -->
   <section id="contact" class="bg-gray-900 text-white">
     <div class="mx-auto max-w-7xl px-4 py-16 grid md:grid-cols-3 gap-8">
@@ -351,12 +350,10 @@
       if (window.lucide) {
         window.lucide.createIcons();
       }
-
       const yearEl = document.getElementById('year');
       if (yearEl) {
         yearEl.textContent = new Date().getFullYear();
       }
-
       const whatsappLink = document.getElementById('whatsapp-link');
       const watchedIds = ['name', 'email', 'phone', 'checkin', 'checkout', 'guests', 'message'];
 
@@ -368,11 +365,9 @@
         const checkOutInput = document.getElementById('checkout');
         const guestsInput = document.getElementById('guests');
         const messageInput = document.getElementById('message');
-
         if (!whatsappLink) {
           return;
         }
-
         const target = '+233556966812';
         const text = encodeURIComponent(
           `Booking enquiry — La Casa Maite\n\nName: ${nameInput ? nameInput.value.trim() : ''}` +
